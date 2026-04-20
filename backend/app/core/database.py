@@ -1,3 +1,4 @@
+"""Database connection pool management. @author robin"""
 import asyncpg
 from app.core.config import get_settings
 

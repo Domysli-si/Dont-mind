@@ -17,6 +17,7 @@ app = FastAPI(
     title="dont-worry API",
     description="Mental well-being tracking API",
     version="1.0.0",
+    contact={"name": "Robin"},
     lifespan=lifespan,
 )
 

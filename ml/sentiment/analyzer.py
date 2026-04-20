@@ -1,3 +1,4 @@
+"""Sentiment analysis module — r.k."""
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 

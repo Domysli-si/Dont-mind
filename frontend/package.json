@@ -2,6 +2,7 @@
   "name": "dont-worry-frontend",
   "private": true,
   "version": "1.0.0",
+  "author": "Robin",
   "type": "module",
   "scripts": {
     "dev": "vite",
