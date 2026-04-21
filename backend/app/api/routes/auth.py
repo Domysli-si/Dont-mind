@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from jose import jwt
 from datetime import datetime, timedelta
 from app.core.config import get_settings
