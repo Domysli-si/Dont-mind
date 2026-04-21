@@ -3,13 +3,17 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    supabase_url: str
-    supabase_service_key: str
-    supabase_jwt_secret: str
-    database_url: str
+    supabase_url: str = "https://placeholder.supabase.co"
+    supabase_service_key: str = "placeholder-service-key"
+    supabase_jwt_secret: str = "placeholder-jwt-secret"
+    database_url: str = ""
     firebase_credentials: str = "firebase-service-account.json"
     vapid_private_key: str = ""
     cors_origins: str = "http://localhost:5173"
+
+    @property
+    def has_database(self) -> bool:
+        return bool(self.database_url) and self.database_url != ""
 
     @property
     def cors_origin_list(self) -> list[str]:

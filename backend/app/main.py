@@ -10,9 +10,12 @@ from app.middleware.request_logging import RequestLoggingMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await get_pool()
+    settings = get_settings()
+    if settings.has_database:
+        await get_pool()
     yield
-    await close_pool()
+    if settings.has_database:
+        await close_pool()
 
 
 app = FastAPI(
