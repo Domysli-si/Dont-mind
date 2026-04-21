@@ -1,4 +1,4 @@
-# dont-worry
+# dont-mind
 
 A Progressive Web Application for mental well-being tracking. Record your daily mood, write journal entries, visualize trends, and receive personalized recommendations powered by simple machine learning.
 
