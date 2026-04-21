@@ -49,3 +49,6 @@ npm-debug.log*
 
 # Firebase
 firebase-service-account.json
+
+# Local JSON data storage
+backend/data/

@@ -17,12 +17,16 @@
     "subtitle": "Track your mood and mental well-being",
     "email": "Email",
     "emailPlaceholder": "you@email.com",
-    "submit": "Sign in with magic link",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password (min. 4 characters)",
+    "loginButton": "Sign in",
+    "registerButton": "Register",
     "submitting": "Sending...",
     "or": "or",
     "demo": "Try demo without registration",
-    "linkSent": "Link sent",
-    "checkEmail": "Check your email and click the link to sign in."
+    "switchToRegister": "Don't have an account? Register",
+    "switchToLogin": "Already have an account? Sign in",
+    "registerSuccess": "Registration successful! You are now signed in."
   },
   "dashboard": {
     "title": "Dashboard",

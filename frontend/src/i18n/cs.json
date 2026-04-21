@@ -17,12 +17,16 @@
     "subtitle": "Sledujte svou náladu a psychickou pohodu",
     "email": "E-mail",
     "emailPlaceholder": "vas@email.cz",
-    "submit": "Přihlásit se pomocí magic linku",
+    "password": "Heslo",
+    "passwordPlaceholder": "Zadejte heslo (min. 4 znaky)",
+    "loginButton": "Přihlásit se",
+    "registerButton": "Zaregistrovat se",
     "submitting": "Odesílání...",
     "or": "nebo",
     "demo": "Vyzkoušejte demo bez registrace",
-    "linkSent": "Odkaz odeslán",
-    "checkEmail": "Zkontrolujte svůj e-mail a kliknutím na odkaz se přihlaste."
+    "switchToRegister": "Nemáte účet? Zaregistrujte se",
+    "switchToLogin": "Už máte účet? Přihlaste se",
+    "registerSuccess": "Registrace úspěšná! Jste přihlášeni."
   },
   "dashboard": {
     "title": "Přehled",

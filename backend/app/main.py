@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.database import get_pool, close_pool
-from app.api.routes import moods, journal, analytics, recommendations, preferences, sync, notifications
+from app.api.routes import auth, moods, journal, analytics, recommendations, preferences, sync, notifications
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.request_logging import RequestLoggingMiddleware
 
@@ -22,7 +22,7 @@ app = FastAPI(
     title="dont-worry API",
     description="Mental well-being tracking API",
     version="1.0.0",
-    contact={"name": "Robin"},
+    contact={"name": "Domysli-si"},
     lifespan=lifespan,
 )
 
@@ -38,6 +38,7 @@ app.add_middleware(
 app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
 app.add_middleware(RequestLoggingMiddleware)
 
+app.include_router(auth.router)
 app.include_router(moods.router)
 app.include_router(journal.router)
 app.include_router(analytics.router)

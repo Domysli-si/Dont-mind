@@ -9,7 +9,7 @@ bearer_scheme = HTTPBearer()
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> dict:
-    """Validate Supabase JWT and return user claims."""
+    """Validate JWT token (local or Supabase) and return user claims."""
     settings = get_settings()
     token = credentials.credentials
     try:
@@ -17,7 +17,7 @@ async def get_current_user(
             token,
             settings.supabase_jwt_secret,
             algorithms=["HS256"],
-            audience="authenticated",
+            options={"verify_aud": False},
         )
     except JWTError:
         raise HTTPException(

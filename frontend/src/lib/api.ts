@@ -1,16 +1,12 @@
-import { supabase } from "./supabase";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.access_token) {
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem("auth_token");
+  if (!token) {
     throw new Error("Not authenticated");
   }
   return {
-    Authorization: `Bearer ${session.access_token}`,
+    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
 }
@@ -19,7 +15,7 @@ async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const headers = await getAuthHeaders();
+  const headers = getAuthHeaders();
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: { ...headers, ...options.headers },

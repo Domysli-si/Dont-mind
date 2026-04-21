@@ -5,12 +5,22 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { supabase } from "../lib/supabase";
-import type { User, Session } from "@supabase/supabase-js";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const DEMO_USER_ID = "demo-00000000-0000-0000-0000-000000000000";
 
-const DEMO_USER = {
+interface AppUser {
+  id: string;
+  email: string;
+  aud?: string;
+  role?: string;
+  created_at?: string;
+  app_metadata?: Record<string, unknown>;
+  user_metadata?: Record<string, unknown>;
+}
+
+const DEMO_USER: AppUser = {
   id: DEMO_USER_ID,
   email: "demo@dont-worry.app",
   aud: "authenticated",
@@ -18,14 +28,15 @@ const DEMO_USER = {
   created_at: new Date().toISOString(),
   app_metadata: {},
   user_metadata: {},
-} as unknown as User;
+};
 
 interface AuthState {
-  user: User | null;
-  session: Session | null;
+  user: AppUser | null;
   loading: boolean;
   isDemo: boolean;
-  signIn: (email: string) => Promise<{ error: Error | null }>;
+  token: string | null;
+  register: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   demoLogin: () => void;
 }
@@ -33,8 +44,8 @@ interface AuthState {
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
 
@@ -46,26 +57,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    const savedToken = localStorage.getItem("auth_token");
+    const savedUser = localStorage.getItem("auth_user");
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+      }
+    }
+    setLoading(false);
   }, []);
 
-  const signIn = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    return { error: error as Error | null };
+  const register = async (email: string, password: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        return { error: body.detail || `Registration failed (${res.status})` };
+      }
+
+      const data = await res.json();
+      const appUser: AppUser = {
+        id: data.user_id,
+        email: data.email,
+        role: "user",
+      };
+
+      localStorage.setItem("auth_token", data.access_token);
+      localStorage.setItem("auth_user", JSON.stringify(appUser));
+      setToken(data.access_token);
+      setUser(appUser);
+      return { error: null };
+    } catch (err: any) {
+      return { error: err.message || "Network error" };
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        return { error: body.detail || `Login failed (${res.status})` };
+      }
+
+      const data = await res.json();
+      const appUser: AppUser = {
+        id: data.user_id,
+        email: data.email,
+        role: "user",
+      };
+
+      localStorage.setItem("auth_token", data.access_token);
+      localStorage.setItem("auth_user", JSON.stringify(appUser));
+      setToken(data.access_token);
+      setUser(appUser);
+      return { error: null };
+    } catch (err: any) {
+      return { error: err.message || "Network error" };
+    }
   };
 
   const signOut = async () => {
@@ -73,10 +136,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("demo_mode");
       setIsDemo(false);
       setUser(null);
-      setSession(null);
+      setToken(null);
       return;
     }
-    await supabase.auth.signOut();
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    setToken(null);
+    setUser(null);
   };
 
   const demoLogin = () => {
@@ -88,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, loading, isDemo, signIn, signOut, demoLogin }}
+      value={{ user, loading, isDemo, token, register, signIn, signOut, demoLogin }}
     >
       {children}
     </AuthContext.Provider>
