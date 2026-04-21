@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "../lib/api";
 import { db } from "../db";
 import { useAuth } from "../context/AuthContext";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../components/ui/card";
 import { Textarea } from "../components/ui/textarea";
 import { Button } from "../components/ui/button";
 import MoodScale from "../components/MoodScale";
@@ -16,18 +22,40 @@ interface MoodEntry {
 }
 
 export default function MoodPage() {
-  const { user } = useAuth();
+  const { t } = useTranslation();
+  const { user, isDemo } = useAuth();
   const [value, setValue] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [history, setHistory] = useState<MoodEntry[]>([]);
 
+  const loadLocal = async () => {
+    const local = await db.moods
+      .where("userId")
+      .equals(user!.id)
+      .reverse()
+      .sortBy("createdAt");
+    setHistory(
+      local.slice(0, 10).map((m) => ({
+        id: m.id!,
+        user_id: m.userId,
+        value: m.value,
+        note: m.note ?? null,
+        created_at: m.createdAt,
+      }))
+    );
+  };
+
   useEffect(() => {
-    api
-      .get<MoodEntry[]>("/api/moods?limit=10")
-      .then(setHistory)
-      .catch(() => {});
+    if (isDemo) {
+      loadLocal();
+    } else {
+      api
+        .get<MoodEntry[]>("/api/moods?limit=10")
+        .then(setHistory)
+        .catch(() => {});
+    }
   }, []);
 
   const handleSubmit = async () => {
@@ -38,7 +66,16 @@ export default function MoodPage() {
     const now = new Date().toISOString();
 
     try {
-      if (navigator.onLine) {
+      if (isDemo) {
+        await db.moods.add({
+          userId: user!.id,
+          value,
+          note: note || undefined,
+          createdAt: now,
+          synced: false,
+        });
+        await loadLocal();
+      } else if (navigator.onLine) {
         const created = await api.post<MoodEntry>("/api/moods", {
           value,
           note: note || null,
@@ -80,25 +117,25 @@ export default function MoodPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="space-y-6 pb-20 md:pb-0 lg:space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Nalada</h2>
+        <h2>{t("mood.title")}</h2>
         <p className="text-muted-foreground">
-          Jak se dnes citite? Zaznamenejte svou naladu.
+          {t("mood.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Zaznamenat naladu</CardTitle>
+          <CardTitle>{t("mood.record")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <MoodScale value={value} onChange={setValue} />
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Poznamka (volitelne)</label>
+            <label className="text-sm font-medium">{t("mood.noteLabel")}</label>
             <Textarea
-              placeholder="Jak se citite? Co se dnes delo?"
+              placeholder={t("mood.notePlaceholder")}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
@@ -107,16 +144,11 @@ export default function MoodPage() {
 
           <div className="flex items-center gap-3">
             <Button onClick={handleSubmit} disabled={!value || saving}>
-              {saving ? "Ukladam..." : "Ulozit"}
+              {saving ? t("mood.saving") : t("mood.save")}
             </Button>
             {success && (
-              <span className="text-sm text-green-600 dark:text-green-400">
-                Ulozeno
-              </span>
-            )}
-            {!navigator.onLine && (
-              <span className="text-sm text-yellow-600 dark:text-yellow-400">
-                Offline rezim
+              <span className="text-sm text-brand-teal font-medium">
+                {t("mood.saved")}
               </span>
             )}
           </div>
@@ -126,7 +158,7 @@ export default function MoodPage() {
       {history.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Nedavne zaznamy</CardTitle>
+            <CardTitle>{t("mood.recentEntries")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

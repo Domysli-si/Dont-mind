@@ -120,3 +120,31 @@ erDiagram
     users ||--o{ journal_entries : "writes"
     users ||--o| user_preferences : "has"
 ```
+
+## Future Features (Planned)
+
+The following features are on the roadmap but not yet implemented. The architecture has been designed to accommodate them without major refactoring.
+
+### Gamification
+
+Points and badges system for consistent mood tracking. Would require a new `achievements` table and a scoring service that awards points based on user activity (entries logged, streaks maintained, diverse mood notes).
+
+### Streaks
+
+Daily streak tracking with a counter shown on the dashboard. Would add a `current_streak` and `longest_streak` column to `user_preferences` and a cron job or on-login check to calculate streak status.
+
+### Therapist Dashboard
+
+A separate authenticated role (`therapist`) with a read-only view of client mood and journal data. Would require a `therapist_clients` linking table and consent-based data sharing. The existing role system in the `users` table already supports this extension.
+
+### Advanced ML Models
+
+Replace or augment VADER with fine-tuned transformer models (e.g. DistilBERT) for more nuanced sentiment detection, multi-label emotion classification, and predictive mood forecasting. Would require a separate model serving layer (e.g. via ONNX Runtime) to keep the FastAPI backend lightweight.
+
+### Report Export
+
+Allow users to select a custom date range (last week, last month, custom range) and generate a printable PDF summary containing mood charts, journal entry highlights, sentiment trends, and personalized insights. Would use a library like WeasyPrint or ReportLab on the backend, with a dedicated `/api/reports/generate` endpoint.
+
+### Enhanced PWA
+
+Full native-like experience across all platforms with deeper service worker integration, background periodic sync (using the Background Sync API), app shortcuts, share target support, and a responsive layout optimized for both mobile and desktop viewports.

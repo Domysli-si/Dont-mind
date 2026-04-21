@@ -14,6 +14,8 @@ RUN python -c "import nltk; nltk.download('vader_lexicon', download_dir='/usr/lo
 COPY backend/ ./
 COPY ml/ ./ml/
 
+ENV PYTHONPATH=/app
+
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

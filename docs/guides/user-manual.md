@@ -53,3 +53,14 @@ The app works offline. Any mood entries or journal entries created while offline
 ## Recommendations
 
 The app provides personalized recommendations based on your mood patterns and journal sentiment. Visit the dashboard to see suggestions tailored to your well-being.
+
+## Coming Soon
+
+The following features are planned for future releases:
+
+- **Gamification** -- Earn badges and achievements for consistent tracking
+- **Streaks** -- Track your daily logging streak and set personal goals
+- **Therapist Dashboard** -- Share your progress with a mental health professional
+- **Advanced Analysis** -- More accurate sentiment detection powered by advanced ML models
+- **Report Export** -- Select a time period and export a printable summary with your mood charts, journal highlights, and trends
+- **Full PWA** -- Enhanced installable app experience with seamless offline-first functionality on mobile and desktop

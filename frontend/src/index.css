@@ -2,47 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Color palette:
+ *   #264653 – dark blue/green (primary dark)
+ *   #2a9d8f – teal (primary accent)
+ *   #e9c46a – yellow (highlight/warning)
+ *   #f4a261 – orange (secondary accent)
+ *   #e76f51 – coral/red (CTA / danger)
+ *
+ * HSL conversions used below.
+ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 60 20% 97%;
+    --foreground: 195 40% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --card-foreground: 195 40% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 195 40% 16%;
+
+    --primary: 173 55% 39%;
+    --primary-foreground: 60 20% 97%;
+
+    --secondary: 30 85% 67%;
+    --secondary-foreground: 195 40% 16%;
+
+    --muted: 195 15% 92%;
+    --muted-foreground: 195 15% 42%;
+
+    --accent: 43 74% 66%;
+    --accent-foreground: 195 40% 16%;
+
+    --destructive: 16 76% 61%;
+    --destructive-foreground: 60 20% 97%;
+
+    --warning: 43 74% 66%;
+    --warning-foreground: 195 40% 16%;
+
+    --border: 195 15% 88%;
+    --input: 195 15% 88%;
+    --ring: 173 55% 39%;
+    --radius: 0.75rem;
+
+    --nav-bg: 195 41% 24%;
+    --nav-foreground: 60 20% 97%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
+    --background: 200 50% 8%;
+    --foreground: 60 10% 92%;
+    --card: 195 41% 14%;
+    --card-foreground: 60 10% 92%;
+    --popover: 195 41% 14%;
+    --popover-foreground: 60 10% 92%;
+
+    --primary: 173 55% 39%;
+    --primary-foreground: 60 20% 97%;
+
+    --secondary: 30 85% 67%;
+    --secondary-foreground: 200 50% 8%;
+
+    --muted: 195 30% 18%;
+    --muted-foreground: 195 15% 60%;
+
+    --accent: 43 74% 66%;
+    --accent-foreground: 200 50% 8%;
+
+    --destructive: 16 76% 50%;
+    --destructive-foreground: 60 20% 97%;
+
+    --warning: 43 74% 66%;
+    --warning-foreground: 200 50% 8%;
+
+    --border: 195 30% 20%;
+    --input: 195 30% 20%;
+    --ring: 173 55% 45%;
+    --radius: 0.75rem;
+
+    --nav-bg: 195 50% 10%;
+    --nav-foreground: 60 10% 92%;
   }
 }
 
@@ -50,7 +89,64 @@
   * {
     @apply border-border;
   }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Typography scale */
+  h1 {
+    @apply text-3xl font-bold tracking-tight lg:text-4xl;
+  }
+  h2 {
+    @apply text-2xl font-bold tracking-tight lg:text-3xl;
+  }
+  h3 {
+    @apply text-xl font-semibold tracking-tight lg:text-2xl;
+  }
+  h4 {
+    @apply text-lg font-semibold lg:text-xl;
+  }
+
+  /* Focus accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+}
+
+/* Transition utilities */
+@layer utilities {
+  .transition-default {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  .transition-slow {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
+  .print\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
   }
 }

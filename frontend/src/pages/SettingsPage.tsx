@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { requestNotificationPermission } from "../lib/firebase";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../components/ui/card";
 import { Select } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
-import { Button } from "../components/ui/button";
 
 interface Preferences {
   user_id: string;
@@ -16,90 +23,102 @@ interface Preferences {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
+  const { isDemo } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [prefs, setPrefs] = useState<Preferences | null>(null);
   const [saving, setSaving] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    return localStorage.getItem("notifications_enabled") === "true";
+  });
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    const stored = localStorage.getItem("show_onboarding");
+    return stored === null ? true : stored === "true";
+  });
 
   useEffect(() => {
-    api
-      .get<Preferences>("/api/user/preferences")
-      .then((data) => {
-        setPrefs(data);
-        setNotificationsEnabled(data.notifications_enabled);
-        setShowOnboarding(data.show_onboarding);
-        if (data.theme && data.theme !== theme) {
-          setTheme(data.theme as "light" | "dark" | "system");
-        }
-      })
-      .catch(() => {});
+    if (!isDemo) {
+      api
+        .get<Preferences>("/api/user/preferences")
+        .then((data) => {
+          setNotificationsEnabled(data.notifications_enabled);
+          setShowOnboarding(data.show_onboarding);
+          if (data.theme && data.theme !== theme) {
+            setTheme(data.theme as "light" | "dark" | "system");
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const handleThemeChange = async (newTheme: string) => {
-    const t = newTheme as "light" | "dark" | "system";
-    setTheme(t);
-    await savePrefs({ theme: t });
+    const val = newTheme as "light" | "dark" | "system";
+    setTheme(val);
+    if (!isDemo) await savePrefs({ theme: val });
   };
 
   const handleNotificationsChange = async (enabled: boolean) => {
     setNotificationsEnabled(enabled);
+    localStorage.setItem("notifications_enabled", String(enabled));
 
     if (enabled) {
-      const token = await requestNotificationPermission();
-      if (!token) {
+      try {
+        const token = await requestNotificationPermission();
+        if (!token) {
+          setNotificationsEnabled(false);
+          localStorage.setItem("notifications_enabled", "false");
+          return;
+        }
+      } catch {
         setNotificationsEnabled(false);
+        localStorage.setItem("notifications_enabled", "false");
         return;
       }
     }
 
-    await savePrefs({ notifications_enabled: enabled });
+    if (!isDemo) await savePrefs({ notifications_enabled: enabled });
   };
 
   const handleOnboardingChange = async (show: boolean) => {
     setShowOnboarding(show);
-    await savePrefs({ show_onboarding: show });
+    localStorage.setItem("show_onboarding", String(show));
+    if (!isDemo) await savePrefs({ show_onboarding: show });
   };
 
   const savePrefs = async (updates: Record<string, unknown>) => {
     setSaving(true);
     try {
-      const updated = await api.put<Preferences>(
-        "/api/user/preferences",
-        updates
-      );
-      setPrefs(updated);
+      await api.put<Preferences>("/api/user/preferences", updates);
     } catch {
-      console.error("Failed to save preferences");
+      // silently fail in demo/offline
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0 max-w-2xl">
+    <div className="space-y-6 pb-20 md:pb-0 max-w-2xl lg:space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Nastaveni</h2>
+        <h2>{t("settings.title")}</h2>
         <p className="text-muted-foreground">
-          Spravujte sve preference a nastaveni aplikace.
+          {t("settings.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Vzhled</CardTitle>
+          <CardTitle>{t("settings.appearance")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Motiv</Label>
+            <Label>{t("settings.theme")}</Label>
             <Select
               value={theme}
               onChange={(e) => handleThemeChange(e.target.value)}
               className="w-40"
             >
-              <option value="light">Svetly</option>
-              <option value="dark">Tmavy</option>
-              <option value="system">Systemovy</option>
+              <option value="light">{t("settings.light")}</option>
+              <option value="dark">{t("settings.dark")}</option>
+              <option value="system">{t("settings.system")}</option>
             </Select>
           </div>
         </CardContent>
@@ -107,14 +126,36 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Upozorneni</CardTitle>
+          <CardTitle>{t("settings.language")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label>{t("settings.language")}</Label>
+            <Select
+              value={i18n.language}
+              onChange={(e) => {
+                i18n.changeLanguage(e.target.value);
+                localStorage.setItem("language", e.target.value);
+              }}
+              className="w-40"
+            >
+              <option value="cs">Čeština</option>
+              <option value="en">English</option>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.notifications")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Denni pripominka nalady</Label>
+              <Label>{t("settings.dailyReminder")}</Label>
               <p className="text-sm text-muted-foreground">
-                Pripomenuti zaznamenat naladu kazdý den.
+                {t("settings.dailyReminderDesc")}
               </p>
             </div>
             <Switch
@@ -127,14 +168,14 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Dalsi</CardTitle>
+          <CardTitle>{t("settings.other")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Uvodni pruvodce</Label>
+              <Label>{t("settings.onboarding")}</Label>
               <p className="text-sm text-muted-foreground">
-                Zobrazit uvodni pruvodce pri dalsim prihlaseni.
+                {t("settings.onboardingDesc")}
               </p>
             </div>
             <Switch
@@ -146,7 +187,7 @@ export default function SettingsPage() {
       </Card>
 
       {saving && (
-        <p className="text-sm text-muted-foreground">Ukladam...</p>
+        <p className="text-sm text-muted-foreground">{t("settings.saving")}</p>
       )}
     </div>
   );

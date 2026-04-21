@@ -107,6 +107,20 @@ class CorrelationPoint(BaseModel):
     date: str
 
 
+# --- Device Tokens / Notifications ---
+
+class DeviceTokenRegister(BaseModel):
+    fcm_token: str = Field(..., min_length=1, max_length=500)
+    platform: str = Field(default="web", max_length=20)
+
+
+class DeviceTokenResponse(BaseModel):
+    user_id: str
+    fcm_token: str
+    platform: str
+    created_at: datetime
+
+
 # --- Sync ---
 
 class SyncMoodItem(BaseModel):

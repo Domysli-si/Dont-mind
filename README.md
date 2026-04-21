@@ -143,11 +143,12 @@ npm test
 
 The following features are planned but not yet implemented:
 
-- Gamification and achievements
-- Streaks and daily goals
-- AI chatbot for guided journaling
-- Therapist dashboard
-- Advanced ML models for deeper pattern recognition
+- **Gamification** -- Achievements, badges, and rewards for consistent tracking
+- **Streaks** -- Daily streak counter and goals to motivate regular mood logging
+- **Therapist Dashboard** -- A dedicated view for mental health professionals to monitor client progress (with consent)
+- **Advanced ML Models** -- Deeper pattern recognition using transformer-based models for more accurate sentiment and mood prediction
+- **Report Export** -- Ability to select a custom time range (week, month, quarter) and generate a printable PDF summary with mood charts, journal highlights, and trend analysis
+- **Native PWA Experience** -- Enhanced installable app experience with full offline-first architecture, background sync, and native-like navigation on both mobile and desktop
 
 ## License
 

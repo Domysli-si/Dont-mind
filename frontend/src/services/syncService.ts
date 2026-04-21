@@ -7,6 +7,8 @@ interface SyncResponse {
 }
 
 export async function syncOfflineData(): Promise<SyncResponse | null> {
+  if (localStorage.getItem("demo_mode") === "true") return null;
+
   const unsyncedMoods = await db.moods.where("synced").equals(0).toArray();
   const unsyncedJournals = await db.journals
     .where("synced")
@@ -38,12 +40,13 @@ export async function syncOfflineData(): Promise<SyncResponse | null> {
 
     return result;
   } catch {
-    console.error("Sync failed — will retry on next online event");
     return null;
   }
 }
 
 export function startSyncListener() {
+  if (localStorage.getItem("demo_mode") === "true") return;
+
   window.addEventListener("online", () => {
     syncOfflineData();
   });

@@ -9,13 +9,23 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+let app: ReturnType<typeof initializeApp> | null = null;
+
+try {
+  app = initializeApp(firebaseConfig);
+} catch {
+  // Firebase not configured — running in demo/local mode
+}
 
 let messaging: ReturnType<typeof getMessaging> | null = null;
 
 function getMessagingInstance() {
-  if (!messaging && typeof window !== "undefined" && "Notification" in window) {
-    messaging = getMessaging(app);
+  if (!messaging && app && typeof window !== "undefined" && "Notification" in window) {
+    try {
+      messaging = getMessaging(app);
+    } catch {
+      // FCM not available
+    }
   }
   return messaging;
 }
@@ -32,7 +42,6 @@ export async function requestNotificationPermission(): Promise<string | null> {
     const token = await getToken(msg, { vapidKey });
     return token;
   } catch {
-    console.error("Failed to get notification permission");
     return null;
   }
 }
